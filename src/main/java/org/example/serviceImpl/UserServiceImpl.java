@@ -1,14 +1,12 @@
 package org.example.serviceImpl;
 
-
 import org.example.dao.UserDao;
 import org.example.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import  org.example.POJO.User;
-
+import org.example.POJO.User;
 
 import java.util.Map;
 
@@ -24,36 +22,39 @@ public class UserServiceImpl implements UserService {
             if (validateSignUpMap(requestMap)) {
                 User user = userDao.findByEmailId(requestMap.get("email"));
                 if (user == null) {
-
                     userDao.save(getUserFromMap(requestMap));
-                    return new ResponseEntity<>("User registered successfully", HttpStatus.OK);
+                    String jsonResponse = "{\"message\": \"User registered successfully\", \"status\": 200}";
+                    return new ResponseEntity<>(jsonResponse, HttpStatus.OK);
                 } else {
-                    return new ResponseEntity<>("Email already exists", HttpStatus.BAD_REQUEST);
+                    String jsonResponse = "{\"message\": \"Email already exists\", \"status\": 400}";
+                    return new ResponseEntity<>(jsonResponse, HttpStatus.BAD_REQUEST);
                 }
             } else {
-                return new ResponseEntity<>("Invalid data", HttpStatus.BAD_REQUEST);
+                String jsonResponse = "{\"message\": \"Invalid data\", \"status\": 400}";
+                return new ResponseEntity<>(jsonResponse, HttpStatus.BAD_REQUEST);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
+            String jsonResponse = "{\"message\": \"Something went wrong\", \"status\": 500}";
+            return new ResponseEntity<>(jsonResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private boolean validateSignUpMap(Map<String, String> requestMap) {
-        if (requestMap.containsKey("name") && requestMap.containsKey("contactNumber")
-                && requestMap.containsKey("email") && requestMap.containsKey("password")){
-            return true;
-        }
-         return false;
+        return requestMap.containsKey("name")
+                && requestMap.containsKey("contactNumber")
+                && requestMap.containsKey("email")
+                && requestMap.containsKey("password");
     }
-    private User getUserFromMap(Map<String,String> requestMap){
+
+    private User getUserFromMap(Map<String, String> requestMap) {
         User user = new User();
         user.setName(requestMap.get("name"));
         user.setContactNumber(requestMap.get("contactNumber"));
         user.setEmail(requestMap.get("email"));
         user.setPassword(requestMap.get("password"));
-        user.setStatus("false");
-        user.setRole("user");
+        user.setStatus("false"); // Initial status for new user
+        user.setRole("user");     // Default role
         return user;
     }
 }
