@@ -19,6 +19,10 @@ public class JwtUtil {
         return extractClaim(token, Claims::getSubject);
     }
 
+    public String extractName(String token) {
+        return extractClaim(token, claims -> claims.get("name", String.class)); // Extrait le nom des revendications
+    }
+
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
@@ -36,16 +40,25 @@ public class JwtUtil {
         return extractExpiration(token).before(new Date());
     }
 
-    public String generateToken(String username, String role) {
+    // Modification de la méthode pour inclure le nom
+    public String generateToken(String username, String role, String name, Integer id,String status) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", role);
+        claims.put("name", name); // Ajout du nom dans les revendications
+        claims.put("id", id);
+        claims.put("status", status);
+
         return createToken(claims, username);
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
-        return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 heures de validité
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact();
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 60000)) // 10 heures de validité
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .compact();
     }
 
     public Boolean validateToken(String token, String username) {

@@ -10,6 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.example.POJO.User;
 
+import javax.persistence.EntityNotFoundException;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -54,7 +56,7 @@ public class UserServiceImpl implements UserService {
             User user = userDao.findByEmailId(requestMap.get("email"));
             if (user != null && passwordEncoder.matches(requestMap.get("password"), user.getPassword())) {
                 if ("true".equals(user.getStatus())) {
-                    String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
+                    String token = jwtUtil.generateToken(user.getEmail(), user.getRole(), user.getName(),user.getId(),user.getStatus());
                     String jsonResponse = "{\"token\": \"" + token + "\"}";
                     return new ResponseEntity<>(jsonResponse, HttpStatus.OK);
                 } else {
@@ -82,8 +84,44 @@ public class UserServiceImpl implements UserService {
         user.setContactNumber(requestMap.get("contactNumber"));
         user.setEmail(requestMap.get("email"));
         user.setPassword(passwordEncoder.encode(requestMap.get("password")));
-        user.setStatus("false"); // Initial status for new user
+        user.setStatus("true"); // Initial status for new user
         user.setRole("user");     // Default role
         return user;
     }
+    @Override
+    public ResponseEntity<List<User>> getAllUsers() {
+        try {
+            List<User> users = userDao.findAll();  // Appelle findAll() pour récupérer tous les utilisateurs
+            if (users.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT); // Pas d'utilisateurs trouvés
+            }
+            return new ResponseEntity<>(users, HttpStatus.OK); // Renvoie la liste d'utilisateurs avec le code 200 OK
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR); // Gérer les erreurs serveur
+        }
+    }
+    @Override
+    public void deleteUserById(Integer id) {
+        if (userDao.existsById(id)) {
+            userDao.deleteById(id);
+        } else {
+            throw new EntityNotFoundException("User not found with id: " + id);
+        }
+    }
+    @Override
+    public boolean updateUserStatus(Integer id, String status) {
+        // Rechercher l'utilisateur par son ID
+        User user = userDao.findById(id).orElse(null);
+
+        if (user != null) {
+            // Modifier le statut de l'utilisateur
+            user.setStatus(status);
+            userDao.save(user);
+            return true;
+        }
+
+        return false;
+    }
+
 }
