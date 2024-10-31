@@ -50,4 +50,11 @@ public class UserRestImpl implements UserRest {
             return ResponseEntity.status(400).body(Collections.singletonMap("error", "Échec de la mise à jour du statut."));
         }
     }
+    @PutMapping("/users/{userId}")
+    @Override
+    public ResponseEntity<User> updateUser(@PathVariable Integer userId, @RequestBody User updatedUser) {
+        User updatedUserResult = userService.updateUser(userId, updatedUser);
+        return ResponseEntity.ok(updatedUserResult);
+    }
+
 }

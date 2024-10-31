@@ -13,4 +13,6 @@ public interface UserService {
     ResponseEntity<List<User>> getAllUsers();
     void deleteUserById(Integer id);
     boolean updateUserStatus(Integer id, String status);
+    User updateUser(Integer userId, User updatedUser);
+
 }
