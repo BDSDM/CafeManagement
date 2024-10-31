@@ -13,6 +13,7 @@ import org.example.POJO.User;
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -122,6 +123,23 @@ public class UserServiceImpl implements UserService {
         }
 
         return false;
+    }
+    @Override
+    public User updateUser(Integer userId, User updatedUser) {
+        Optional<User> existingUserOptional = userDao.findById(userId);
+
+        if (existingUserOptional.isPresent()) {
+            User existingUser = existingUserOptional.get();
+            existingUser.setName(updatedUser.getName());
+            existingUser.setContactNumber(updatedUser.getContactNumber());
+            existingUser.setEmail(updatedUser.getEmail());
+            existingUser.setStatus(updatedUser.getStatus());
+            existingUser.setRole(updatedUser.getRole());
+
+            return userDao.save(existingUser); // Enregistre et retourne l'utilisateur mis à jour
+        } else {
+            throw new RuntimeException("Utilisateur non trouvé avec l'ID : " + userId);
+        }
     }
 
 }

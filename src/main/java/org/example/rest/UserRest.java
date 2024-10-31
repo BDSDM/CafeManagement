@@ -21,4 +21,9 @@ public interface UserRest {
             @PathVariable Integer id,
             @RequestBody UpdateStatusRequest request
     );
+    @PutMapping("/{userId}")
+    ResponseEntity<User> updateUser(
+            @PathVariable("userId") Integer userId,
+            @RequestBody User updatedUser
+    );
 }
